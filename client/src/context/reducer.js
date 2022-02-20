@@ -1,4 +1,10 @@
-import { CLEAR_ALERT, DISPLAY_ALERT } from './actions';
+import {
+  CLEAR_ALERT,
+  DISPLAY_ALERT,
+  REGISTER_USER_BEGIN,
+  REGISTER_USER_SUCCESS,
+  REGISTER_USER_ERROR,
+} from './actions';
 
 const reducer = (state, action) => {
   if (action.type === DISPLAY_ALERT.failed) {
@@ -25,6 +31,36 @@ const reducer = (state, action) => {
       showAlert: false,
       alertText: '',
       alertType: '',
+    };
+  }
+
+  if (action.type === REGISTER_USER_BEGIN) {
+    return {
+      ...state,
+      isLoading: true,
+    };
+  }
+
+  if (action.type === REGISTER_USER_SUCCESS) {
+    return {
+      ...state,
+      isLoading: false,
+      showAlert: true,
+      alertText: 'User Registered! Redirecting...',
+      alertType: 'success',
+      user: action.payload.user,
+      token: action.payload.token,
+      userLocation: action.payload.location,
+      jobLocation: action.payload.location,
+    };
+  }
+  if (action.type === REGISTER_USER_ERROR) {
+    return {
+      ...state,
+      isLoading: false,
+      showAlert: true,
+      alertType: 'danger',
+      alertText: action.payload.msg,
     };
   }
 

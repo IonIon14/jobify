@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react"
+import { useNavigate } from "react-router-dom";
 import Wrapper from "../../assets/wrappers/RegisterPage";
 import { Logo, FormRow, Alert } from "../../components";
 import mainLogo from "../../assets/images/logo.svg";
@@ -14,10 +15,21 @@ const initialState = {
 
 const Register = () => {
 
+  const { user } = useAppContext();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (user) {
+      setTimeout(() => {
+        navigate('/')
+      }, 3000)
+    }
+
+  }, [user, navigate])
+
   const [values, setValues] = useState(initialState);
 
-  const { isLoading, showAlert, displayErrorAlert, displaySuccessAlert } = useAppContext();
-
+  const { isLoading, showAlert, displayErrorAlert, displaySuccessAlert, clearAlert, registerUser } = useAppContext();
 
   //global state and useNavigate
 
@@ -26,27 +38,32 @@ const Register = () => {
   }
 
   const handleChange = (e) => {
-    console.log(e.target.value);
     setValues({ ...values, [e.target.name]: e.target.value });
-    console.log(values);
 
   };
 
   const handleSubmit = (e) => {
-
+    e.preventDefault();
     const { name, email, password, isMember } = values;
     if (!email || !password || (!isMember && !name)) {
       displayErrorAlert();
-      e.preventDefault();
+      clearAlert();
     }
     else if (email && password && isMember) {
       displaySuccessAlert();
-      e.preventDefault();
+      clearAlert();
     }
-    console.log(values);
 
+    const currentUser = { name, email, password };
+    if (currentUser) {
+      console.log('already a member');
+    }
+    else {
+      registerUser(currentUser);
+    }
 
   };
+
   return (
     <Wrapper className="full-page">
       <form onSubmit={handleSubmit} className='form'>
@@ -60,7 +77,9 @@ const Register = () => {
           <>
             <FormRow name="email" type="email" value={values.email} text="Email" handleChange={handleChange} />
             <FormRow name="password" type="password" value={values.password} text="Password" handleChange={handleChange} />
-            <button onSubmit={handleSubmit} className="btn btn-block">Submit</button>
+            <button type='submit' className='btn btn-block' disabled={isLoading}>
+              submit
+            </button>
             <p>Not a member yet ?
               <button type='button' onClick={toggleMember} className='member-btn'>Register</button>
             </p>
@@ -69,7 +88,9 @@ const Register = () => {
             <FormRow name="name" type="text" value={values.name} text="Name" handleChange={handleChange} />
             <FormRow name="email" type="email" value={values.email} text="Email" handleChange={handleChange} />
             <FormRow name="password" type="password" value={values.password} text="Password" handleChange={handleChange} />
-            <button onSubmit={handleSubmit} className="btn btn-block">Submit</button>
+            <button type='submit' className='btn btn-block' disabled={isLoading}>
+              submit
+            </button>
             <p>Already a member ?
               <button type='button' onClick={toggleMember} className='member-btn'>Login</button>
             </p>
