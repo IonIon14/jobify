@@ -1,10 +1,30 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { Dashboard, Register, Error, Landing } from './pages';
+import { Register, Error, Landing, ProtectedRoute } from './pages';
+import {
+  AddJob,
+  AllJobs,
+  Profile,
+  SharedLayout,
+  Stats,
+} from './pages/Dashboard';
 const App = () => {
   return (
     <Router>
       <Routes>
-        <Route exact path="/" element={<Dashboard />} />
+        <Route
+          exact
+          path="/"
+          element={
+            <ProtectedRoute>
+              <SharedLayout />
+            </ProtectedRoute>
+          }
+        >
+          <Route index element={<Stats />} />
+          <Route path="all-jobs" element={<AllJobs />} />
+          <Route path="add-job" element={<AddJob />} />
+          <Route path="profile" element={<Profile />} />
+        </Route>
         <Route path="/register" element={<Register />} />
         <Route path="/landing" element={<Landing />} />
         <Route

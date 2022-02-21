@@ -9,27 +9,17 @@ const initialState = {
   name: '',
   email: '',
   password: '',
-  isMember: false,
+  isMember: true,
 
 }
 
 const Register = () => {
 
-  const { user } = useAppContext();
   const navigate = useNavigate();
-
-  useEffect(() => {
-    if (user) {
-      setTimeout(() => {
-        navigate('/')
-      }, 3000)
-    }
-
-  }, [user, navigate])
 
   const [values, setValues] = useState(initialState);
 
-  const { isLoading, showAlert, displayErrorAlert, displaySuccessAlert, clearAlert, registerUser } = useAppContext();
+  const { user, isLoading, showAlert, displayErrorAlert, authUser } = useAppContext();
 
   //global state and useNavigate
 
@@ -47,22 +37,27 @@ const Register = () => {
     const { name, email, password, isMember } = values;
     if (!email || !password || (!isMember && !name)) {
       displayErrorAlert();
-      clearAlert();
-    }
-    else if (email && password && isMember) {
-      displaySuccessAlert();
-      clearAlert();
     }
 
+
     const currentUser = { name, email, password };
-    if (currentUser) {
-      console.log('already a member');
+    if (isMember) {
+      authUser({ currentUser, endPoint: 'login', alertText: 'Login Successfull! Redirecting...' })
     }
     else {
-      registerUser(currentUser);
+      authUser({ currentUser, endPoint: 'register', alertText: 'User Created! Redirecting...' })
     }
 
   };
+
+  useEffect(() => {
+    if (user) {
+      setTimeout(() => {
+        navigate('/')
+      }, 3000)
+    }
+
+  }, [user, navigate])
 
   return (
     <Wrapper className="full-page">

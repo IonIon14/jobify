@@ -4,6 +4,7 @@ import express from "express";
 import connectDB from "./db/connect.js";
 import dotenv from "dotenv";
 import "express-async-errors";
+import morgan from "morgan";
 
 //middleware
 import notFoundMiddleWare from "./middleware/not-found.js";
@@ -17,6 +18,9 @@ dotenv.config();
 const app = express();
 
 //middlewares
+if (process.env.NODE_ENV !== "production") {
+  app.use(morgan("dev"));
+}
 
 app.use(express.json());
 

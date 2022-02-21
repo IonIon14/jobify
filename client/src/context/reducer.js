@@ -1,9 +1,9 @@
 import {
   CLEAR_ALERT,
   DISPLAY_ALERT,
-  REGISTER_USER_BEGIN,
-  REGISTER_USER_SUCCESS,
-  REGISTER_USER_ERROR,
+  AUTH_USER_BEGIN,
+  AUTH_USER_SUCCESS,
+  AUTH_USER_ERROR,
 } from './actions';
 
 const reducer = (state, action) => {
@@ -16,15 +16,6 @@ const reducer = (state, action) => {
     };
   }
 
-  if (action.type === DISPLAY_ALERT.success) {
-    return {
-      ...state,
-      showAlert: true,
-      alertText: 'Login Successfull!',
-      alertType: 'success',
-    };
-  }
-
   if (action.type === CLEAR_ALERT) {
     return {
       ...state,
@@ -34,19 +25,19 @@ const reducer = (state, action) => {
     };
   }
 
-  if (action.type === REGISTER_USER_BEGIN) {
+  if (action.type === AUTH_USER_BEGIN) {
     return {
       ...state,
       isLoading: true,
     };
   }
 
-  if (action.type === REGISTER_USER_SUCCESS) {
+  if (action.type === AUTH_USER_SUCCESS) {
     return {
       ...state,
       isLoading: false,
       showAlert: true,
-      alertText: 'User Registered! Redirecting...',
+      alertText: action.payload.alertText,
       alertType: 'success',
       user: action.payload.user,
       token: action.payload.token,
@@ -54,7 +45,7 @@ const reducer = (state, action) => {
       jobLocation: action.payload.location,
     };
   }
-  if (action.type === REGISTER_USER_ERROR) {
+  if (action.type === AUTH_USER_ERROR) {
     return {
       ...state,
       isLoading: false,

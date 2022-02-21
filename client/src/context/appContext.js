@@ -3,20 +3,25 @@ import axios from 'axios';
 import {
   CLEAR_ALERT,
   DISPLAY_ALERT,
-  REGISTER_USER_BEGIN,
-  REGISTER_USER_SUCCESS,
-  REGISTER_USER_ERROR,
+  AUTH_USER_BEGIN,
+  AUTH_USER_SUCCESS,
+  AUTH_USER_ERROR,
 } from './actions';
 import reducer from './reducer';
+
+const token = localStorage.getItem('token');
+const user = localStorage.getItem('user');
+const location = localStorage.getItem('location');
+
 const initialState = {
   isLoading: false,
   showAlert: false,
   alertText: '',
   alertType: '',
-  user: null,
-  token: null,
-  userLocation: '',
-  jobLocation: '',
+  user: user ? JSON.parse(user) : null,
+  token: token || null,
+  userLocation: location || '',
+  jobLocation: location || '',
 };
 
 const AppContext = React.createContext();
@@ -38,34 +43,49 @@ const AppProvider = ({ children }) => {
     setTimeout(() => dispatch({ type: CLEAR_ALERT }), 3000);
   };
 
-  const registerUser = async (currentUser) => {
-    dispatch({ type: REGISTER_USER_BEGIN });
+  const addUserToLocalStorage = ({ user, token, location }) => {
+    localStorage.setItem('user', JSON.stringify(user));
+    localStorage.setItem('token', token);
+    localStorage.setItem('location', location);
+  };
+
+  const removeUserFromLocalStorage = () => {
+    localStorage.removeItem('user');
+    localStorage.removeItem('token');
+    localStorage.removeItem('location');
+  };
+
+  const authUser = async ({ currentUser, endPoint, alertText }) => {
+    dispatch({ type: AUTH_USER_BEGIN });
     try {
-      const response = await axios.post('/api/v1/auth/register', currentUser);
-      console.log(response);
-      const { user, token, location } = response.data;
+      const { data } = await axios.post(
+        `/api/v1/auth/${endPoint}`,
+        currentUser
+      );
+      const { user, token, location } = data;
       dispatch({
-        type: REGISTER_USER_SUCCESS,
+        type: AUTH_USER_SUCCESS,
         payload: {
           user,
           token,
           location,
+          alertText,
         },
       });
 
-      // will add later
-      // addUserToLocalStorage({
-      //   user,
-      //   token,
-      //   location,
-      // })
+      addUserToLocalStorage({
+        user,
+        token,
+        location,
+      });
     } catch (err) {
       console.log(err.response);
       dispatch({
-        type: REGISTER_USER_ERROR,
+        type: AUTH_USER_ERROR,
         payload: { msg: err.response.data.msg },
       });
     }
+    clearAlert();
   };
 
   return (
@@ -74,7 +94,7 @@ const AppProvider = ({ children }) => {
         ...state,
         displayErrorAlert,
         displaySuccessAlert,
-        registerUser,
+        authUser,
       }}
     >
       {children}
@@ -85,6 +105,5 @@ const AppProvider = ({ children }) => {
 const useAppContext = () => {
   return useContext(AppContext);
 };
-//shortcut to make reusable app context on each component multiple times
 
 export { AppProvider, useAppContext, initialState };
