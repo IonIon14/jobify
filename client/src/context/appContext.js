@@ -6,6 +6,11 @@ import {
   AUTH_USER_BEGIN,
   AUTH_USER_SUCCESS,
   AUTH_USER_ERROR,
+  TOGGLE_SIDEBAR,
+  LOGOUT_USER,
+  UPDATE_USER_BEGIN,
+  UPDATE_USER_ERROR,
+  UPDATE_USER_SUCCESS,
 } from './actions';
 import reducer from './reducer';
 
@@ -22,12 +27,45 @@ const initialState = {
   token: token || null,
   userLocation: location || '',
   jobLocation: location || '',
+  showSidebar: false,
 };
 
 const AppContext = React.createContext();
 
 const AppProvider = ({ children }) => {
   const [state, dispatch] = useReducer(reducer, initialState);
+
+  //Axios - Setup Instance
+
+  axios.defaults.headers.common['Authorization'] = `Bearer ${state.token}`;
+
+  const authFetch = axios.create({
+    baseURL: '/api/v1',
+  });
+
+  //request
+  authFetch.interceptors.request.use(
+    (config) => {
+      config.headers.common['Authorization'] = `Bearer ${state.token}`;
+      return config;
+    },
+    (error) => {
+      return Promise.reject(error);
+    }
+  );
+  //response
+  authFetch.interceptors.response.use(
+    (response) => {
+      return response;
+    },
+    (error) => {
+      console.log(error.response);
+      if (error.response.status === 401) {
+        console.log('AUTH ERROR!');
+      }
+      return Promise.reject(error);
+    }
+  );
 
   const displayErrorAlert = () => {
     dispatch({ type: DISPLAY_ALERT.failed });
@@ -53,6 +91,10 @@ const AppProvider = ({ children }) => {
     localStorage.removeItem('user');
     localStorage.removeItem('token');
     localStorage.removeItem('location');
+  };
+
+  const toggleSidebar = () => {
+    dispatch({ type: TOGGLE_SIDEBAR });
   };
 
   const authUser = async ({ currentUser, endPoint, alertText }) => {
@@ -88,6 +130,41 @@ const AppProvider = ({ children }) => {
     clearAlert();
   };
 
+  const logoutUser = () => {
+    dispatch({ type: LOGOUT_USER });
+    removeUserFromLocalStorage();
+  };
+
+  const updateUser = async (currentUser, alertText) => {
+    dispatch({ type: UPDATE_USER_BEGIN });
+    try {
+      const { data } = await authFetch.patch('/auth/updateUser', currentUser);
+      const { user, token, location } = data;
+
+      dispatch({
+        type: UPDATE_USER_SUCCESS,
+        payload: {
+          user,
+          token,
+          location,
+          alertText,
+        },
+      });
+      addUserToLocalStorage({
+        user,
+        token,
+        location,
+      });
+    } catch (err) {
+      console.log(err.response);
+      dispatch({
+        type: UPDATE_USER_ERROR,
+        payload: { msg: err.response.data.msg },
+      });
+    }
+    clearAlert();
+  };
+
   return (
     <AppContext.Provider
       value={{
@@ -95,6 +172,9 @@ const AppProvider = ({ children }) => {
         displayErrorAlert,
         displaySuccessAlert,
         authUser,
+        logoutUser,
+        toggleSidebar,
+        updateUser,
       }}
     >
       {children}

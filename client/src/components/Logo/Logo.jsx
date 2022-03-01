@@ -1,7 +1,7 @@
 
-const Logo = ({logo}) => {
+const Logo = ({ logo }) => {
   return (
-    <img src={logo} alt="jobify" className="logo"/>
+    <img src={logo} alt="jobify" className="logo" />
   )
 }
 
