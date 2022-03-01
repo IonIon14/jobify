@@ -43,10 +43,14 @@ const UserSchema = new mongoose.Schema({
 });
 
 UserSchema.pre("save", async function () {
-  const salt = await bcrypt.genSalt(10);
-  this.password = await bcrypt.hash(this.password, salt);
-
+  // const salt = await bcrypt.genSalt(10);
+  // this.password = await bcrypt.hash(this.password, salt); this.password doesn't exist because the paSsword has select:false in User model
   //next();
+  //console.log(this.modifiedPaths());
+  //console.log(this.isModified("name"));
+  if (!this.isModified("password")) return;
+  const salt = await bcrypt.getSalt(10);
+  this.password = await bcrypt.hash(this.password, salt);
 });
 
 UserSchema.methods.createJWT = function () {
